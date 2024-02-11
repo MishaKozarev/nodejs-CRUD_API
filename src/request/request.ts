@@ -58,6 +58,45 @@ export const handleRequest = (req: IncomingMessage, res: ServerResponse) => {
           console.error(error);
         }
       });
+    } else if (url && method === 'PUT' && url.startsWith('/api/users/')) {
+      const userId = url.split('/')[numberId];
+      if (userId && !validatorUUID(userId)) {
+        sendResponse(res, 400, { message: Message.invalidUserId } as ErrorMessage);
+      }
+
+      let body = '';
+
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+
+      req.on('end', () => {
+        try {
+          const { username, age, hobbies } =
+          jsonParse<Partial<User>>(body) || {};
+
+          const userIndex = users.findIndex((u) => u.id === userId);
+          const user = users[userIndex];
+
+          if (!user) {
+            sendResponse(res, 404, {
+              message: Message.userNotFound,
+            } as ErrorMessage);
+          } else if (!username || !age || !hobbies || !Array.isArray(hobbies)) {
+            sendResponse(res, 400, {
+              message: Message.missingRequiredFields,
+            } as ErrorMessage);
+          } else {
+            user.username = username;
+            user.age = age;
+            user.hobbies = hobbies;
+
+            sendResponse(res, 200, user);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
