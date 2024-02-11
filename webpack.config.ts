@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import path from 'path';
 import { Configuration } from 'webpack';
-import { devConfig } from './webpack.dev.config';
-import { prodConfig } from './webpack.prod.config';
+import { developmentConfig } from './webpack.dev.config';
+import { productionConfig } from './webpack.prod.config';
 
-const config = {
+const configuration = {
   target: 'node',
+  entry: './src/server.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -32,17 +33,17 @@ const config = {
 export default (env: any, argv: Configuration): Configuration => {
   if (argv.mode === 'development') {
     return {
-      ...config,
-      ...devConfig,
+      ...configuration,
+      ...developmentConfig,
     };
   }
 
   if (argv.mode === 'production') {
     return {
-      ...config,
-      ...prodConfig,
+      ...configuration,
+      ...productionConfig,
     };
   }
 
-  return config;
+  return configuration;
 };
