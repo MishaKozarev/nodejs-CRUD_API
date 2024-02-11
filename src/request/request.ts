@@ -56,6 +56,9 @@ export const handleRequest = (req: IncomingMessage, res: ServerResponse) => {
           }
         } catch (error) {
           console.error(error);
+          sendResponse(res, 500, {
+            message: Message.internalServerError,
+          } as ErrorMessage);
         }
       });
     } else if (url && method === 'PUT' && url.startsWith('/api/users/')) {
@@ -95,11 +98,33 @@ export const handleRequest = (req: IncomingMessage, res: ServerResponse) => {
           }
         } catch (error) {
           console.error(error);
+          sendResponse(res, 500, {
+            message: Message.internalServerError,
+          } as ErrorMessage);
         }
       });
+    } else if (url && method === 'DELETE' && url.startsWith('/api/users/')) {
+      const userId = url.split('/')[numberId];
+      if (userId && !validatorUUID(userId)) {
+        sendResponse(res, 400, { message: Message.invalidUserId } as ErrorMessage);
+      }
+
+      const userIndex = users.findIndex((u) => u.id === userId);
+
+      if (userIndex === -1) {
+        sendResponse(res, 404, { message: Message.userNotFound } as ErrorMessage);
+      } else {
+        users.splice(userIndex, 1);
+        sendResponse(res, 204);
+      }
+    } else {
+      sendResponse(res, 404, { message: Message.invalidRoute } as ErrorMessage);
     }
   } catch (error) {
     console.error(error);
+    sendResponse(res, 500, {
+      message: Message.internalServerError,
+    } as ErrorMessage);
   }
 }
 
