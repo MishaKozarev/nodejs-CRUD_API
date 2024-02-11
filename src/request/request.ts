@@ -1,7 +1,9 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { v4 as uuidv4 } from 'uuid';
 import { ErrorMessage, User } from '../models/index';
 import { sendResponse } from '../utils/sendResponse';
 import { validatorUUID } from '../utils/uuidValidation';
+import { jsonParse } from '../utils/json-parse';
 import { Message, numberId } from '../constants/message.enum';
 
 const users: User[] = [];
@@ -24,8 +26,41 @@ export const handleRequest = (req: IncomingMessage, res: ServerResponse) => {
       } else {
         sendResponse(res, 200, user);
       }
+    } else if (method === 'POST' && url === '/api/users') {
+      let body = '';
+
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+
+      req.on('end', () => {
+        try {
+          const { username, age, hobbies } =
+          jsonParse<Partial<User>>(body) || {};
+
+          if (!username || !age || !hobbies || !Array.isArray(hobbies)) {
+            sendResponse(res, 400, {
+              message: Message.missingRequiredFields,
+            } as ErrorMessage);
+          } else {
+            const currentUser: User = {
+              id: uuidv4(),
+              username,
+              age,
+              hobbies,
+            };
+
+            users.push(currentUser);
+
+            sendResponse(res, 201, currentUser);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
   }
 }
+
