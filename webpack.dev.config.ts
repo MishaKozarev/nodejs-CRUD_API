@@ -1,15 +1,7 @@
-const path = require('path');
+interface DevelopmentConfiguration {
+  mode: 'none' | 'development' | 'production';
+}
 
-module.exports = {
-  entry: './src/index.js',
-  output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-  },
+export const devConfig: DevelopmentConfiguration = {
   mode: 'development',
-  devServer: {
-    contentBase: path.join(__dirname, 'dist'),
-    compress: true,
-    port: 9000,
-  },
 };
